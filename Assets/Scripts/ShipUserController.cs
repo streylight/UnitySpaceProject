@@ -22,26 +22,23 @@ public class ShipUserController : MonoBehaviour {
 //	}
 
 	void FixedUpdate() {
-		// get input for rotation and the forward/reverse movement
-		var rotate = Input.GetAxisRaw( "Horizontal" );
-		var throttle = Input.GetAxis( "Vertical" );
 
-		// pass the input to the ship
-		ship.Move(rotate, throttle);
 	}
 
 	void Update() {
+
+		// get input for rotation and the forward/reverse movement
+		var rotate = Input.GetAxisRaw( "Horizontal" );
+		var throttle = Input.GetAxis( "Vertical" );
+		
+		// pass the input to the ship
+		ship.Move(rotate, throttle);
+
 		// rotate ship around y axis
 		if (Input.GetButton( "Fire1" ) && Time.time > nextFire) {
 			nextFire = Time.time + fireRate;
 			Instantiate( shot, shotSpawn.position, shotSpawn.rotation );
 		}
 		transform.Rotate( 0.0f, 0.0f, -1 * Input.GetAxisRaw( "Horizontal" ) * rotationSpeed * Time.deltaTime );
-
-
-
-		// clamps boundries for map which are currently hardcoded
-		// the clamp is needed to prevent the rotation physics to move the ship +- on the y axis which is baaaaad
-		//transform.position = new Vector3(Mathf.Clamp(transform.position.x, -500, 500),0.0f,Mathf.Clamp(transform.position.z,-500,500));
 	}
 }

@@ -15,15 +15,14 @@ public class ShipController : MonoBehaviour {
 
 	public float Throttle { get; private set; }                         
 	public float ThrottleSpeed { get; private set; }                  
-	public float EnginePower { get; private set; }            
+	public float EnginePower { get; set; }            
 	public float RotationInput { get; private set; }
 	public float ThrottleInput { get; private set; }
 	public float BankThrottle { get; private set; }  
 	public float BankPower { get; private set; } 
 
 	private int reverse;
-	private float fVelocity;
-	private float rVelocity;
+
 	private Rigidbody2D rigidBody2D { get; set;}
 
 	void Awake () {
@@ -39,6 +38,13 @@ public class ShipController : MonoBehaviour {
 		this.RotationInput = rotationInput;
 		this.ThrottleInput = throttleInput;
 
+		if( Input.GetKey( KeyCode.LeftShift ) ) {
+			maxForwardVelocity = 7.0f;
+			ThrottleInput += 0.5f;
+		} else {
+			maxForwardVelocity = 3.0f;
+		}
+
 		// negate throttle if in reverse
 		// needed for the "realistic" velocity change when changing from forward to reverse
 		if ( throttleInput < 0 ) {
@@ -48,17 +54,11 @@ public class ShipController : MonoBehaviour {
 			this.reverse = 1;
 		}
 
+
 		// set/calculate movement factors
-		//CalculateThrottleSpeed();
 		ControlThrottle();
 		CalculateLinearForces();
 	}
-
-	// normalize rotation and throttle inputs
-//	void ClampInputs() {
-//		RotationInput = Mathf.Clamp (RotationInput, -1, 1);
-//		ThrottleInput = Mathf.Clamp (ThrottleInput, -1, 1);
-//	}
 
 	// calculate throttle speed and set it
 	void CalculateThrottleSpeed() {
@@ -69,40 +69,29 @@ public class ShipController : MonoBehaviour {
 
 	// self explanatory
 	void ControlThrottle() {
-		Throttle = Mathf.Clamp01(Throttle + ThrottleInput * Time.deltaTime * throttleChangeSpeed);
-		BankThrottle = Mathf.Clamp01(BankThrottle + RotationInput * Time.deltaTime * throttleChangeSpeed);
-
+		Throttle = Mathf.Clamp01( Throttle + ThrottleInput * Time.deltaTime * throttleChangeSpeed );
 		EnginePower = Mathf.Min( (Throttle * maxEnginePower), maxForwardVelocity );
-		BankPower = BankThrottle * maxEnginePower / 2;
 	}
 	
 	void CalculateLinearForces() {
 		var forces = Vector3.zero;
 
+
+
 		var velocity = rigidBody2D.velocity;
-//		if ( Input.GetKey( KeyCode.LeftShift ) ) {
-//			sqrMaxVelocity = 6.0f;
-//			rigidBody2D.velocity.magnitude += 0.2f; 
-//		} else {
-//			sqrMaxVelocity = 3.0f;
-//		}
+
 		if(velocity.sqrMagnitude > sqrMaxVelocity) {
 			rigidBody2D.velocity = velocity.normalized * maxForwardVelocity;
 		}
 		Debug.Log("Velocity: " + GetComponent<Rigidbody2D>().velocity);
 		//used for the zero gravity type effect
+
 		forces += EnginePower * ((reverse * transform.up) * ThrottleInput);
 
-		//Debug.Log (forces);
 
 		Debug.Log("Forces: " + forces);
 
 		GetComponent<Rigidbody2D>().AddForce(forces);
-
-
-
-
-
 		//GetComponent<Rigidbody2D>().velocity = new Vector3(Mathf.Clamp(velocity.x, maxReverseVelocity, maxForwardVelocity), Mathf.Clamp(velocity.y, maxReverseVelocity, maxForwardVelocity), 0);
 	}
 }
